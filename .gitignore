@@ -1,0 +1,17 @@
+# Virtual Environment
+venv310/
+venv/
+
+# Environment variables
+.env
+
+# Audio files
+*.mp3
+*.wav
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
