@@ -11,13 +11,10 @@ load_dotenv()
 # from there we will generate the transcript of the audio
 os.environ["PATH"] += os.pathsep + r"C:\ffmpeg\bin"
 
-model = whisper.load_model("base")
-result = model.transcribe("audio1.aac")
-# speech ="""Today is holi and its the festival of colours every one play it with joy but there are many
-#              toxic elements also who try to spoil the joy out of it."""
-speech=result['text']
+wisper_model = whisper.load_model("base")
+
 # langchian work
-# print(speech)
+
 llm=ChatGroq(
     groq_api_key=os.getenv("GROQ_API_KEY"),
     model="openai/gpt-oss-120b",
@@ -51,14 +48,23 @@ The text which you are getting is a transcript of the voice so try to polish in 
 
 chain=prompt | llm
 
-responce=chain.invoke({
+
+
+
+def analyze_audio(audio_path):
+
+    #wisper transript
+    result=wisper_model.transcribe(audio_path)
+    speech=result["text"]
+
+    #LLM invoke 
+
+    responce=chain.invoke({
     "speech":speech,
     "format_instruction":parser.get_format_instructions()
-})
-
-parsed_output=parser.parse(responce.content)
-
-print("fluency score is : ",parsed_output.fluency_score)
-print(parsed_output.improved_version)
-
-print(responce.content)
+    })
+    print(speech)
+    
+    parsed_output=parser.parse(responce.content)
+    print(parsed_output)
+    return speech,parsed_output

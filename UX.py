@@ -1,127 +1,90 @@
 import streamlit as st
+import tempfile
+import subprocess
+import os
 
-st.set_page_config(
-    page_title="AI English Speaking Coach",
-    page_icon="🎤",
-    layout="wide"
-)
+from streamlit_mic_recorder import mic_recorder
+from main import analyze_audio
+
+st.set_page_config(page_title="AI English Coach", page_icon="🎤")
 
 st.title("🎤 AI English Speaking Coach")
-st.write("Improve your English speaking with AI-powered feedback.")
-
-st.divider()
+st.write("Record your speech and receive AI feedback.")
 
 # -------------------------
-# INPUT SECTION
+# RECORD AUDIO
 # -------------------------
 
-col1, col2 = st.columns([1,2])
+audio = mic_recorder(
+    start_prompt="Start Recording",
+    stop_prompt="Stop Recording",
+    just_once=True
+)
 
-with col1:
-    st.subheader("Select Topic")
-
-    topics = [
-        "Importance of Discipline",
-        "My Dream Job",
-        "Role of Technology in Education",
-        "Tell me about yourself",
-        "Importance of Time Management"
-    ]
-
-    topic = st.selectbox("Choose a topic", topics)
-
-with col2:
-    st.subheader("Your Speech (Testing Mode)")
-    speech_text = st.text_area(
-        "Paste your speech transcript",
-        height=220,
-        placeholder="Example: Today I want to talk about discipline..."
-    )
-
-st.write("")
-
-analyze_button = st.button("🚀 Analyze My Speech")
-
-st.divider()
+# Save audio in session state
+if audio:
+    st.session_state.audio_bytes = audio["bytes"]
 
 # -------------------------
-# OUTPUT SECTION
+# DISPLAY AUDIO
 # -------------------------
 
-if analyze_button:
+if "audio_bytes" in st.session_state:
 
-    # Dummy values (replace later with LLM output)
-    fluency_score = 7
-    filler_words = ["um", "like"]
-    tense_errors = ["I go to school yesterday"]
-    article_errors = ["She is teacher"]
-    subject_verb_errors = ["He go to market"]
+    st.success("Recording completed")
 
-    improved_version = """
-Discipline plays a crucial role in achieving success in life.
-It allows individuals to stay focused and maintain consistency
-in their efforts. By practicing discipline, people can develop
-strong habits that contribute to long-term personal and
-professional growth.
-"""
+    st.audio(st.session_state.audio_bytes)
 
-    st.header("📊 Speech Analysis")
+    if st.button("Analyze Speech"):
 
-    col1, col2, col3 = st.columns(3)
+        with st.spinner("Processing your speech..."):
 
-    with col1:
-        st.metric("Fluency Score", f"{fluency_score}/10")
+            try:
 
-    with col2:
-        st.metric("Filler Words", len(filler_words))
+                audio_bytes = st.session_state.audio_bytes
 
-    with col3:
-        st.metric("Total Errors", len(tense_errors) + len(article_errors) + len(subject_verb_errors))
+                # Save webm
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
+                    tmp.write(audio_bytes)
+                    webm_path = tmp.name
 
-    st.divider()
+                # Convert to wav
+                wav_path = webm_path.replace(".webm", ".wav")
 
-    # -------------------------
-    # TABS FOR OUTPUT
-    # -------------------------
+                subprocess.run(
+                    ["ffmpeg", "-i", webm_path, wav_path],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
 
-    tab1, tab2, tab3 = st.tabs(["Grammar Errors", "Confidence Indicators", "Improved Speech"])
+                # Run AI pipeline
+                transcript, result = analyze_audio(wav_path)
 
-    with tab1:
+                # Cleanup
+                os.remove(webm_path)
+                os.remove(wav_path)
 
-        col1, col2, col3 = st.columns(3)
+                # -------------------------
+                # RESULTS
+                # -------------------------
 
-        with col1:
-            st.subheader("Tense Errors")
-            if tense_errors:
-                st.write(tense_errors)
-            else:
-                st.success("No tense errors")
+                st.subheader("Transcript")
+                st.write(transcript)
 
-        with col2:
-            st.subheader("Article Errors")
-            if article_errors:
-                st.write(article_errors)
-            else:
-                st.success("No article errors")
+                st.subheader("Fluency Score")
+                st.metric("Score", result.fluency_score)
 
-        with col3:
-            st.subheader("Subject Verb Errors")
-            if subject_verb_errors:
-                st.write(subject_verb_errors)
-            else:
-                st.success("No subject-verb errors")
+                st.subheader("Improved Speech")
+                st.write(result.improved_version)
 
-    with tab2:
+                st.subheader("Grammar Errors")
 
-        st.subheader("Filler Words Detected")
+                st.write("Tense Errors:", result.tense_error)
+                st.write("Article Errors:", result.article_errors)
+                st.write("Subject Verb Errors:", result.subject_verb_errors)
 
-        if filler_words:
-            st.write(filler_words)
-        else:
-            st.success("No filler words detected")
+                st.subheader("Filler Words")
+                st.write(result.filler_words)
 
-    with tab3:
-
-        st.subheader("Improved Version of Your Speech")
-
-        st.write(improved_version)
+            except Exception as e:
+                st.error(f"Error: {e}")
