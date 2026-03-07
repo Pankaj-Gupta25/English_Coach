@@ -78,10 +78,9 @@ Rules:
 - Speak like a human tutor
 - Give actionable advice
                                               
-Do not use markdown formatting such as **bold**, *italic*, lists, or symbols.
-Respond in plain conversational text suitable for speech.
+
 Respond naturally as if you are speaking directly to the student.
-Keep your response under 120 words so it sounds like spoken feedback.
+Keep your response under 200 words so it sounds like spoken feedback.
 """)
 
 coach_chain = coach_prompt | llm
