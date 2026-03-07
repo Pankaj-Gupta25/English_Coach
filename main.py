@@ -48,7 +48,58 @@ The text which you are getting is a transcript of the voice so try to polish in 
 
 chain=prompt | llm
 
+coach_prompt=ChatPromptTemplate.from_template("""
+You are a friendly AI English speaking coach.
 
+The student just spoke on a topic and their speech was analyzed.
+
+Here is the analysis:
+
+Fluency Score: {fluency_score}
+
+Tense Errors: {tense_errors}
+
+Article Errors: {article_errors}
+
+Subject Verb Errors: {subject_verb_errors}
+
+Filler Words: {filler_words}
+
+Improved Version:
+{improved_version}
+
+Now talk to the student like a real tutor.
+
+Rules:
+- Be encouraging and supportive
+- Explain mistakes simply
+- Tell the student this is the {improved_version} how it is more correct sounding than your version.                                    
+- Do not sound technical
+- Speak like a human tutor
+- Give actionable advice
+                                              
+Do not use markdown formatting such as **bold**, *italic*, lists, or symbols.
+Respond in plain conversational text suitable for speech.
+Respond naturally as if you are speaking directly to the student.
+Keep your response under 120 words so it sounds like spoken feedback.
+""")
+
+coach_chain = coach_prompt | llm
+
+
+
+def coach_feedback(parsed_output):
+
+    response=coach_chain.invoke({
+        "fluency_score": parsed_output.fluency_score,
+        "tense_errors": parsed_output.tense_errors,
+        "article_errors": parsed_output.article_errors,
+        "subject_verb_errors": parsed_output.subject_verb_errors,
+        "filler_words": parsed_output.filler_words,
+        "improved_version": parsed_output.improved_version
+    })
+
+    return response.content
 
 
 def analyze_audio(audio_path):
@@ -66,5 +117,8 @@ def analyze_audio(audio_path):
     print(speech)
     
     parsed_output=parser.parse(responce.content)
-    print(parsed_output)
-    return speech,parsed_output
+    coach_message=coach_feedback(parsed_output)
+
+    print("parsed output",parsed_output)
+    print("coach message ",coach_message)
+    return speech,parsed_output,coach_message

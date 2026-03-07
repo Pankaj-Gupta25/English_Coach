@@ -1,7 +1,7 @@
 from pydantic import BaseModel,Field
 
 class Speech_Analysis(BaseModel):
-    tense_error: list[str]=Field(description="list the tense errors")
+    tense_errors: list[str]=Field(description="list the tense errors")
     article_errors: list[str]=Field(description="list all the article error")
     subject_verb_errors:list[str]=Field(description="subject verb agreement errors")
     filler_words: list[str]=Field(description="Detected Filler words")

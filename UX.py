@@ -5,6 +5,7 @@ import os
 
 from streamlit_mic_recorder import mic_recorder
 from main import analyze_audio
+from tts import speak_text
 
 st.set_page_config(page_title="AI English Coach", page_icon="🎤")
 
@@ -58,7 +59,7 @@ if "audio_bytes" in st.session_state:
                 )
 
                 # Run AI pipeline
-                transcript, result = analyze_audio(wav_path)
+                transcript, result,coach_message = analyze_audio(wav_path)
 
                 # Cleanup
                 os.remove(webm_path)
@@ -77,9 +78,23 @@ if "audio_bytes" in st.session_state:
                 st.subheader("Improved Speech")
                 st.write(result.improved_version)
 
+                # convert to voice
+                audio_file = speak_text(coach_message)
+                st.subheader("🔊 Listen to your AI Coach")
+                st.audio(audio_file)
+
+                st.subheader("🧠 AI Speaking Coach")
+                st.write(coach_message)
+                # convert to voice
+                # audio_file = speak_text(coach_message)
+
+                # st.subheader("🔊 Listen to your AI Coach")
+                # st.audio(audio_file)
+
+                
                 st.subheader("Grammar Errors")
 
-                st.write("Tense Errors:", result.tense_error)
+                st.write("Tense Errors:", result.tense_errors)
                 st.write("Article Errors:", result.article_errors)
                 st.write("Subject Verb Errors:", result.subject_verb_errors)
 
