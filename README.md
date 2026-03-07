@@ -122,6 +122,21 @@ parsed = parser.parse(resp.content)
 - If you see errors from the Groq client or missing `GROQ_API_KEY`, create a `.env` file in the project folder with `GROQ_API_KEY=your_key` or set the env var in your shell.
 - If TTS generation fails, verify `edge_tts` is installed and your environment allows asyncio subprocesses.
 
+## UI Preview
+
+Below are screenshots of the app UI. Add the images to `Project/English_coach/assets/` with the filenames shown, or replace them with your own screenshots.
+
+![App - Recording and Transcript](assets/ui_record_transcript.png)
+
+![App - Improved Speech and Coach Message](assets/ui_improved_coach.png)
+
+To add the images locally:
+
+```powershell
+mkdir -p Project\English_coach\assets
+# copy your screenshots into that folder as ui_record_transcript.png and ui_improved_coach.png
+```
+
 - If you see missing Python packages, activate `venv310` then run `pip install` as shown above.
 
 ## Next steps / Improvements
