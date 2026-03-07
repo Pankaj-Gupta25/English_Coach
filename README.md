@@ -126,9 +126,13 @@ parsed = parser.parse(resp.content)
 
 Below are screenshots of the app UI. Add the images to `Project/English_coach/assets/` with the filenames shown, or replace them with your own screenshots.
 
-![App - Recording and Transcript](assets/ui_record_transcript.png)
+<p align="center">
+  <img src="assets/ui_record_transcript.png" width="700">
+</p>
 
-![App - Improved Speech and Coach Message](assets/ui_improved_coach.png)
+<p align="center">
+  <img src="assets/ui_improved_coach.png" width="700">
+</p>
 
 To add the images locally:
 
